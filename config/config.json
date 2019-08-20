@@ -1,0 +1,8 @@
+{
+    "ProcessServices": {
+        "Name": "process_sa_services",
+        "Version": "1.0.0",
+        "instance": "process_sa_services_01",
+        "Port": 8000
+    }
+}
