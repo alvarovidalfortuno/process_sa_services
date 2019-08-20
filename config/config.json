@@ -1,6 +1,7 @@
 {
     "ProcessServices": {
         "Name": "process_sa_services",
+        "Author": "Alvaro Vidal Fortuño",
         "Version": "1.0.0",
         "instance": "process_sa_services_01",
         "Port": 8000
