@@ -11,10 +11,12 @@ app.get('/', (req, res) => {
         "Name": global.config.Name,
         "Version": global.config.Version,
         "Instance": global.config.Instance,
-        "Port": global.config.Port,
+        "Port": process.env.PORT,
         "Status": "Running"
     });
 });
+//Allowing access from any domain once in production
+
 app.use(function(req, res, next) {
     res.header('Access-Control-Allow-Origin', "*");
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
@@ -26,7 +28,7 @@ app.use('/', require('./controllers/default'));
 
 
 
-app.listen(global.config.Port, () => {
+app.listen(process.env.PORT, () => {
 
     console.log('%s v%s -\x1b[32m Running at Port %s \x1b[0m- %s', global.config.Name, global.config.Version, global.config.Port, Date().toLocaleString());
 
