@@ -1,0 +1,19 @@
+{
+  "name": "process_sa_services",
+  "version": "1.0.0",
+  "description": "Webservices for Portafolio Titulo DUOC San Joaquin(Empresa Process SA)",
+  "main": "index.js",
+  "scripts": {
+    "test": "node start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IgnisHinotora/process_sa_services.git"
+  },
+  "author": "Alvaro Vidal Fortuño",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/IgnisHinotora/process_sa_services/issues"
+  },
+  "homepage": "https://github.com/IgnisHinotora/process_sa_services#readme"
+}
