@@ -9,6 +9,7 @@ app.use(express.json());
 app.get('/', (req, res) => {
     res.status(200).json({
         "Name": global.config.Name,
+        "Author": "Alvaro Vidal Fortuño",
         "Version": global.config.Version,
         "Instance": global.config.Instance,
         "Port": process.env.PORT,
