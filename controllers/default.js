@@ -4,9 +4,6 @@ var express = require('express'),
     app = express(),
     router = express.Router();
 
-//app.post('/', () => {});
-
-
 
 router.get('/test', (req, res) => {
 

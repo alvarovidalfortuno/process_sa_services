@@ -3,6 +3,12 @@ require('./config/config.js');
 
 const express = require('express');
 const app = express();
+// *** line that requires services/web-server.js is here ***
+const dbConfig = require('./config/database.js');
+const defaultThreadPoolSize = 4;
+
+// Increase thread pool size by poolMax
+process.env.UV_THREADPOOL_SIZE = dbConfig.hrPool.poolMax + defaultThreadPoolSize;
 
 app.use(express.json());
 

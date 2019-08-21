@@ -17,6 +17,7 @@
     },
     "homepage": "https://github.com/IgnisHinotora/process_sa_services#readme",
     "dependencies": {
-        "express": "^4.17.1"
+        "express": "^4.17.1",
+        "oracledb": "^4.0.1"
     }
 }
