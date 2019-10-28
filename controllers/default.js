@@ -61,57 +61,134 @@ router.post('/test', (req, res) => {
 
 
 router.post('/login', (req, res) => {
-
-    if (!req.body.usuario || !req.body.password) {
-        res.status(400).json({ ok: false, message: "Las credenciales no han sido enviadas" })
+    //Métodod recibe el usuario solicitado, con este valor se buscara el password en la BD y se enviará a la 
+    //app de escritorio
+    if (!req.body.usuario) {
+        res.status(400).json({ ok: false, message: "Usuarios vacío" })
         return
     }
+    //lógica para Query
+    oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
+    let usuariosIN = req.body.usuario;
+    async function getLoginCredentials() {
 
-    //extraer byte[] cipherTextBytes
-    let data = 'BmwzQACRCmddGbSXdUJIGw==';
-    let buff = Buffer.from(data, 'base64');
-    let arrByte = Uint8Array.from(buff);
-    //************************ */
-    //console.log('arrByte: ', arrByte.toString());
+        let connection;
+        try {
+            connection = await oracledb.getConnection({
+                user: process.env.USER,
+                password: process.env.PASSWORD,
+                connectString: process.env.ORACLE_URI
+            });
 
-
-
-
-    const storedHashString = 'P@@Sw0rd';
-    const storedSaltString = 'S@LT&KEY';
-    const vikey = '@1B2c3D4e5F6g7H8';
-
-    const storedHashBytes = new Buffer.from(storedHashString, 'base64');
-    const storedSaltBytes = new Buffer.from(storedSaltString, 'base64');
-
-    let arrByteHash = Uint8Array.from(storedHashBytes);
-    let arrByteSalt = Uint8Array.from(storedSaltBytes);
-
-
-    crypto.pbkdf2(arrByteHash, arrByteSalt, 1000, 20, 'sha512',
-        (err, calculatedHashBytes) => {
-
-
-            console.log(calculatedHashBytes.toString())
-
-
-
+            const result = await connection.execute('SELECT CONTRASEÑA_USUARIO FROM USUARIOS WHERE CORREO_USUARIO= ', usuariosIN);
+            //console.log(result.rows);
+            res.status(200).json({
+                ok: true,
+                message: result.rows
+            });
+            //return result.rows
+        } catch (error) {
+            console.log(error);
+        } finally {
+            if (connection) {
+                try {
+                    await connection.close();
+                } catch (error) {
+                    console.log(error);
+                }
+            }
         }
-    );
+    }
+    getLoginCredentials();
+});
+//Método para crear usuarios
+router.post('/usuarioCreate', (req, res) => {
+    if (!req.body.correo_usuario || !req.body.password || !req.body.role) {
+        res.status(400).json({ ok: false, message: "Faltan campos" })
+        return
+    }
+    //lógica para Query
+    oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
+    let usuariosIN = req.body.usuario;
+    async function usuarioCreate() {
 
-    res.status(200).json({
-        ok: true,
-        message: "Login exitoso!"
-    });
+        let connection;
+        try {
+            connection = await oracledb.getConnection({
+                user: process.env.USER,
+                password: process.env.PASSWORD,
+                connectString: process.env.ORACLE_URI
+            });
 
+            const result = await connection.execute('INSERT INTO USUARIOS VALUES ');
+            //console.log(result.rows);
+            res.status(200).json({
+                ok: true,
+                message: result.rows
+            });
+            //return result.rows
+        } catch (error) {
+            console.log(error);
+        } finally {
+            if (connection) {
+                try {
+                    await connection.close();
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        }
+    }
+    usuarioCreate();
 });
 
-router.put('/test', (req, res) => {
 
-    res.status(200).json({
-        ok: true,
-        message: "Este PUT se ve bueno chicos"
-    });
+
+
+
+
+
+
+router.put('/usuarioUpdate', (req, res) => {
+
+    if (!req.body.usuario) {
+        res.status(400).json({ ok: false, message: "Usuarios vacío" })
+        return
+    }
+    //lógica para Query
+    oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
+    let usuariosIN = req.body.usuario;
+    async function getLoginCredentials() {
+
+        let connection;
+        try {
+            connection = await oracledb.getConnection({
+                user: process.env.USER,
+                password: process.env.PASSWORD,
+                connectString: process.env.ORACLE_URI
+            });
+
+            const result = await connection.execute('SELECT CONTRASEÑA_USUARIO FROM USUARIOS WHERE CORREO_USUARIO= ', usuariosIN);
+            //console.log(result.rows);
+            res.status(200).json({
+                ok: true,
+                message: result.rows
+            });
+            //return result.rows
+        } catch (error) {
+            console.log(error);
+        } finally {
+            if (connection) {
+                try {
+                    await connection.close();
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        }
+    }
+    getLoginCredentials();
+
 
 });
 
