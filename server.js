@@ -1,14 +1,8 @@
 require('./config/config.js');
-
+const oracledb = require('oracledb');
 
 const express = require('express');
 const app = express();
-// *** line that requires services/web-server.js is here ***
-const dbConfig = require('./config/database.js');
-const defaultThreadPoolSize = 4;
-
-// Increase thread pool size by poolMax
-process.env.UV_THREADPOOL_SIZE = dbConfig.hrPool.poolMax + defaultThreadPoolSize;
 
 app.use(express.json());
 
@@ -33,7 +27,29 @@ app.use(function(req, res, next) {
 
 app.use('/', require('./controllers/default'));
 
+async function ConnectionTest() {
+    try {
+        let connection;
+        connection = await oracledb.getConnection({
+            user: process.env.USER,
+            password: process.env.PASSWORD,
+            connectString: process.env.ORACLE_URI
+        });
+        if (connection) {
+            try {
+                console.log('Conexión Exitosa')
+                await connection.close();
+            } catch (error) {
+                console.log('Error en Conexión: ' + error);
+            }
+        }
 
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+ConnectionTest();
 
 app.listen(process.env.PORT, () => {
 
