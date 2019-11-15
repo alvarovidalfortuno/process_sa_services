@@ -32,9 +32,10 @@ router.post('/login', (req, res) => {
             const result = await connection.execute('SELECT CONTRASEÑA_USUARIO FROM USUARIOS WHERE CORREO_USUARIO = :1', [usuariosIN]);
             //console.log(result.rows);
             let user_password_in = Object.values(result.rows)
+            let json = JSON.stringify(user_password_in)
+            let password_out = json.replace('"[{', '')
             res.status(200).json({
-                ok: true,
-                user_password_in
+                json
             });
             //return result.rows
         } catch (error) {
