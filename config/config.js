@@ -14,7 +14,7 @@ try {
      * ===========================================
      */
 
-    process.env.USER = process.env.USER || 'system'
+    process.env.USER = process.env.USER || 'BDPORTAFOLIO'
     process.env.PASSWORD = process.env.PASSWORD || '123'
     process.env.ORACLE_URI = process.env.ORACLE_URI || '(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)(SID=xe)))'
 

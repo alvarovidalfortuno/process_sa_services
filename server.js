@@ -25,7 +25,11 @@ app.use(function(req, res, next) {
     next();
 })
 
-app.use('/', require('./controllers/default'));
+app.use('/', require('./controllers/usuario'));
+app.use('/', require('./controllers/rol'));
+app.use('/', require('./controllers/rol_usuario'));
+app.use('/', require('./controllers/empleado'));
+app.use('/', require('./controllers/login'));
 
 async function ConnectionTest() {
     try {
