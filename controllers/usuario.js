@@ -140,13 +140,13 @@ router.put('/usuarioUpdate', (req, res) => {
 
 router.delete('/usuarioDelete', (req, res) => {
 
-    if (!req) {
+    if (!req.body.id_usuario) {
         res.status(400).json({ status: false, message: 'Bad Request' })
         return
     }
     async function usuarioDelete() {
         oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
-        let correo_usuario_IN = req.body.correo_usuario;
+        let id_usuario_IN = req.body.id_usuario;
         let connection;
 
         try {
@@ -155,11 +155,14 @@ router.delete('/usuarioDelete', (req, res) => {
                 password: process.env.PASSWORD,
                 connectString: process.env.ORACLE_URI
             });
+            //let disableConstraint = await connection.execute('ALTER TABLE EMPLEADOS DISABLE CONSTRAINT EMPLEADOS_FK1');
+            //let deletingUser = await connection.execute('BEGIN BORRAR_USUARIO(:1); END;', [id_usuario_IN]);
+            let enableConstraint = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK1');
+            console.log('disableConstraint:', disableConstraint)
 
-            let result = await connection.execute('DELETE FROM USUARIOS WHERE CORREO_USUARIO IN :1', [correo_usuario_IN])
-            res.status(200).json({ ok: true, message: 'El Usuario ' + correo_usuario_IN + ' ha sido eliminado' })
+            res.status(200).json({ ok: true, message: 'El Usuario ' + id_usuario_IN + ' ha sido eliminado' })
         } catch (error) {
-            console.log(error)
+            console.log('catch_error:', error)
         } finally {
             connection.close()
         }
