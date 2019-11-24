@@ -81,11 +81,15 @@ router.post('/empleadoCreate', (req, res) => {
                 connectString: process.env.ORACLE_URI
             });
 
-            const result = await connection.execute('INSERT INTO EMPLEADOS VALUES((SELECT MAX(ID_EMPLEADO)+1 FROM EMPLEADOS),:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11)', [SNOMBRE_EMPLEADO, PAPELLIDO_EMPLEADO, SAPELLIDO_EMPLEADO, EDAD_EMPLEADO, RUN_EMPLEADO, DV_EMPLEADO, DIRECCION, ID_COMUNA, ID_USUARIO, ID_AREA, ID_CARGO]);
+            const result = await connection
+                .execute('INSERT INTO EMPLEADOS VALUES((SELECT MAX(ID_EMPLEADO)+1 FROM EMPLEADOS),:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11)', [SNOMBRE_EMPLEADO, PAPELLIDO_EMPLEADO, SAPELLIDO_EMPLEADO, EDAD_EMPLEADO, RUN_EMPLEADO, DV_EMPLEADO, DIRECCION, ID_COMUNA, ID_USUARIO, ID_AREA, ID_CARGO]);
+
+
             res.status(200).json({
                 ok: true,
                 message: 'Empleado creado exitosamente!'
             });
+            console.log('result: ', result)
             return result
         } catch (error) {
             console.log(error);
@@ -172,13 +176,13 @@ router.put('/empleadoUpdate', (req, res) => {
 
 router.delete('/empleadoDelete', (req, res) => {
 
-    if (!req) {
+    if (!req.body.id_empleado) {
         res.status(400).json({ status: false, message: 'Bad Request' })
         return
     }
     async function usuarioDelete() {
         oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
-        let correo_usuario_IN = req.body.correo_usuario;
+        let id_empleado_IN = req.body.id_empleado;
         let connection;
 
         try {
@@ -188,11 +192,12 @@ router.delete('/empleadoDelete', (req, res) => {
                 connectString: process.env.ORACLE_URI
             });
 
-            let result = await connection.execute('DELETE FROM USUARIOS WHERE CORREO_USUARIO IN :1', [correo_usuario_IN])
-            res.status(200).json({ ok: true, message: 'El Usuario ' + correo_usuario_IN + ' ha sido eliminado' })
+            let result = await connection.execute('DELETE FROM EMPLEADOS WHERE ID_EMPLEADO IN :1', [id_empleado_IN])
+            res.status(200).json({ ok: true, message: 'El empleado ' + id_empleado_IN + ' ha sido eliminado' })
         } catch (error) {
             console.log(error)
         } finally {
+            const commit = await connection.execute('commit')
             connection.close()
         }
 

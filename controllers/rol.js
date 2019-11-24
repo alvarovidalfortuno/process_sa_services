@@ -18,7 +18,7 @@ router.get('/rolList', (req, res) => {
         return
     }
     oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
-    async function usuarioList() {
+    async function rolList() {
         let connection;
         try {
             connection = await oracledb.getConnection({
@@ -45,7 +45,7 @@ router.get('/rolList', (req, res) => {
         }
     }
 
-    usuarioList();
+    rolList();
 
 })
 
@@ -58,10 +58,9 @@ router.post('/rolCreate', (req, res) => {
     }
     //lógica para Query
     oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
-    let correo_usuario_IN = req.body.correo_usuario;
-    let password_IN = req.body.password;
-    let role_IN = req.body.role;
-    async function usuarioCreate() {
+    let nombre_rol_IN = req.body.nombre_rol;
+    let desc_rol_IN = req.body.desc_rol;
+    async function rolCreate() {
 
         let connection;
         try {
@@ -71,17 +70,19 @@ router.post('/rolCreate', (req, res) => {
                 connectString: process.env.ORACLE_URI
             });
 
-            const result = await connection.execute('INSERT INTO USUARIOS VALUES((SELECT MAX(ID_USUARIO)+1 FROM USUARIOS),:1,:2)', [correo_usuario_IN, password_IN]);
+            const result = await connection.execute('INSERT INTO ROLES VALUES((SELECT MAX(ID_ROL)+1 FROM ROLES),:1,:2)', [nombre_rol_IN, desc_rol_IN]);
             res.status(200).json({
                 ok: true,
-                message: 'Usuario creado exitosamente!'
+                message: 'ROL creado exitosamente!'
             });
             return result
         } catch (error) {
             console.log(error);
         } finally {
+            const commit = await connection.execute('commit')
             if (connection) {
                 try {
+
                     await connection.close();
                 } catch (error) {
                     console.log(error);
@@ -89,22 +90,22 @@ router.post('/rolCreate', (req, res) => {
             }
         }
     }
-    usuarioCreate();
+    rolCreate();
 });
 
 router.put('/rolUpdate', (req, res) => {
 
-    if (!req.body.correo_usuario || !req.body.password_new || !req.body.correo_usuario_new) {
+    if (!req.body.id_rol || !req.body.nombre_rol || !req.body.desc_rol) {
         res.status(400).json({ ok: false, message: "Faltan campos" })
         return
     }
     //lógica para Query
     oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
-    let correo_usuario = req.body.correo_usuario
-    let correo_usuario_new = req.body.correo_usuario_new;
-    let password_new = req.body.password_new;
+    let id_rol_IN = req.body.id_rol
+    let nombre_rol_IN = req.body.nombre_rol;
+    let desc_rol_IN = req.body.desc_rol;
 
-    async function usuarioUpdate() {
+    async function rolUpdate() {
 
         let connection;
         try {
@@ -114,15 +115,16 @@ router.put('/rolUpdate', (req, res) => {
                 connectString: process.env.ORACLE_URI
             });
 
-            const result = await connection.execute('UPDATE USUARIOS SET CORREO_USUARIO = :correonew , CONTRASEÑA_USUARIO = :passwordnew WHERE CORREO_USUARIO in :usuario', { correonew: correo_usuario_new, passwordnew: password_new, usuario: correo_usuario });
+            const result = await connection.execute('UPDATE ROLES SET NOMBRE_ROL = :1 , DESC_ROL = :2 WHERE ID_ROL in :3', { 1: id_rol_IN, 2: nombre_rol_IN, 3: desc_rol_IN });
             res.status(200).json({
                 ok: true,
-                message: 'Usuario actualizado exitosamente!'
+                message: 'ROL actualizado exitosamente!'
             });
             return result.rows
         } catch (error) {
             console.log(error);
         } finally {
+            const commit = await connection.execute('commit')
             if (connection) {
                 try {
                     await connection.close();
@@ -132,7 +134,7 @@ router.put('/rolUpdate', (req, res) => {
             }
         }
     }
-    usuarioUpdate();
+    rolUpdate();
 
 
 });
@@ -143,9 +145,9 @@ router.delete('/rolDelete', (req, res) => {
         res.status(400).json({ status: false, message: 'Bad Request' })
         return
     }
-    async function usuarioDelete() {
+    async function rolDelete() {
         oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
-        let correo_usuario_IN = req.body.correo_usuario;
+        let id_rol_IN = req.body.id_rol;
         let connection;
 
         try {
@@ -155,16 +157,17 @@ router.delete('/rolDelete', (req, res) => {
                 connectString: process.env.ORACLE_URI
             });
 
-            let result = await connection.execute('DELETE FROM USUARIOS WHERE CORREO_USUARIO IN :1', [correo_usuario_IN])
-            res.status(200).json({ ok: true, message: 'El Usuario ' + correo_usuario_IN + ' ha sido eliminado' })
+            let result = await connection.execute('DELETE FROM ROLES WHERE ID_ROL IN :1', [id_rol_IN])
+            res.status(200).json({ ok: true, message: 'El ROL ' + id_rol_IN + ' ha sido eliminado' })
         } catch (error) {
             console.log(error)
         } finally {
+            const commit = await connection.execute('commit')
             connection.close()
         }
 
     }
-    usuarioDelete()
+    rolDelete()
 
 });
 

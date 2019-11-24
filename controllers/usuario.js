@@ -27,7 +27,7 @@ router.get('/usuarioList', (req, res) => {
                 password: process.env.PASSWORD,
                 connectString: process.env.ORACLE_URI
             });
-            const result = await connection.execute('SELECT * FROM USUARIOS ORDER BY ID_USUARIO');
+            const result = await connection.execute('SELECT * FROM BDPORTAFOLIO.USUARIOS ORDER BY ID_USUARIO');
             res.status(200).json({
                 message: result.resultSet,
                 Rows: result.rows
@@ -155,15 +155,15 @@ router.delete('/usuarioDelete', (req, res) => {
                 password: process.env.PASSWORD,
                 connectString: process.env.ORACLE_URI
             });
-            //let disableConstraint = await connection.execute('ALTER TABLE EMPLEADOS DISABLE CONSTRAINT EMPLEADOS_FK1');
-            //let deletingUser = await connection.execute('BEGIN BORRAR_USUARIO(:1); END;', [id_usuario_IN]);
-            let enableConstraint = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK1');
-            console.log('disableConstraint:', disableConstraint)
+            let disableConstraint = await connection.execute('ALTER TABLE EMPLEADOS DISABLE CONSTRAINT EMPLEADOS_FK1');
+            let deletingUser = await connection.execute('BEGIN BORRAR_USUARIO(:1); END;', [id_usuario_IN]);
 
             res.status(200).json({ ok: true, message: 'El Usuario ' + id_usuario_IN + ' ha sido eliminado' })
         } catch (error) {
             console.log('catch_error:', error)
         } finally {
+            let enableConstraint = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK1');
+            let commit = await connection.execute('commit')
             connection.close()
         }
 
