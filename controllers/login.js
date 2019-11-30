@@ -27,7 +27,7 @@ router.post('/login', (req, res) => {
                 connectString: process.env.ORACLE_URI
             });
 
-            const result = await connection.execute('SELECT CONTRASEÑA_USUARIO FROM USUARIOS WHERE CORREO_USUARIO = :1', [usuariosIN]);
+            const result = await connection.execute('SELECT CONTRASE�A_USUARIO FROM USUARIOS WHERE CORREO_USUARIO = :1', [usuariosIN]);
             //console.log(result.rows);
             let user_password_in = Object.values(result.rows)
             let json = JSON.stringify(user_password_in)
