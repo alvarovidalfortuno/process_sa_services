@@ -174,6 +174,59 @@ router.put('/empleadoUpdate', (req, res) => {
 
 });
 
+router.get('/empleadoBuscar', (req, res) => {
+
+    if (!req.query.id_empleado) {
+        res.status(400).json({
+            ok: false,
+            message: 'No se envió una id de empleado'
+
+
+        });
+    }
+    async function empleadoBuscar() {
+        let connection;
+        let id = req.query.id_empleado;
+
+        try {
+            connection = await oracledb.getConnection({
+                user: process.env.USER,
+                password: process.env.PASSWORD,
+                connectString: process.env.ORACLE_URI
+            });
+
+            const result = await connection
+                .execute('SELECT * FROM EMPLEADOS WHERE ID_EMPLEADO IN :1', [id]);
+            var response = result.rows;
+            res.status(200).json({
+                response
+            });
+            return result.rows
+        } catch (error) {
+            console.log(error);
+        } finally {
+            if (connection) {
+                try {
+                    await connection.close();
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        }
+    }
+
+
+    empleadoBuscar();
+
+
+});
+
+
+
+
+
+
+
 router.delete('/empleadoDelete', (req, res) => {
 
     if (!req.body.id_empleado) {
