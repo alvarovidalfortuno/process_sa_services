@@ -8,7 +8,7 @@ var express = require('express'),
     router = express.Router();
 
 
-//MÉTODOS USUARIOS
+//MÉTODOS EMPLEADOS CRUD 
 
 router.get('/EmpleadoList', (req, res) => {
     if (!req) {
@@ -200,6 +200,8 @@ router.get('/empleadoBuscar', (req, res) => {
             var response = result.rows;
             res.status(200).json({
                 response
+
+
             });
             return result.rows
         } catch (error) {
@@ -220,11 +222,6 @@ router.get('/empleadoBuscar', (req, res) => {
 
 
 });
-
-
-
-
-
 
 
 router.delete('/empleadoDelete', (req, res) => {
@@ -258,6 +255,168 @@ router.delete('/empleadoDelete', (req, res) => {
     usuarioDelete()
 
 });
+//Métodos para cargar ComboBoxes en UI EMPLEADOS
+router.get('/comboComuna', (req, res) => {
 
+    if (!req) {
+        res.status(400).json({
+            ok: false,
+            message: 'Error en el request'
+        });
+        return
+    }
+    oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
+    async function comboComuna() {
+        let connection;
+        try {
+            connection = await oracledb.getConnection({
+                user: process.env.USER,
+                password: process.env.PASSWORD,
+                connectString: process.env.ORACLE_URI
+            });
+            const result = await connection.execute('SELECT ID_COMUNA,NOMBRE_COMUNA FROM COMUNA ORDER BY ID_COMUNA');
+            res.status(200).json({
+                message: result.resultSet,
+                Rows: result.rows
+            })
 
+        } catch (err) {
+            console.log(err)
+        } finally {
+            if (connection) {
+                try {
+                    await connection.close();
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        }
+    }
+
+    comboComuna();
+
+});
+
+router.get('/comboUsuario', (req, res) => {
+
+    if (!req) {
+        res.status(400).json({
+            ok: false,
+            message: 'Error en el request'
+        });
+        return
+    }
+    oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
+    async function comboUsuario() {
+        let connection;
+        try {
+            connection = await oracledb.getConnection({
+                user: process.env.USER,
+                password: process.env.PASSWORD,
+                connectString: process.env.ORACLE_URI
+            });
+            const result = await connection.execute('SELECT ID_USUARIO, CORREO_USUARIO FROM USUARIOS WHERE ID_USUARIO IN (SELECT MAX(ID_USUARIO) FROM USUARIOS)');
+            res.status(200).json({
+                message: result.resultSet,
+                Rows: result.rows
+            })
+
+        } catch (err) {
+            console.log(err)
+        } finally {
+            if (connection) {
+                try {
+                    await connection.close();
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        }
+    }
+
+    comboUsuario();
+
+});
+
+router.get('/comboCargo', (req, res) => {
+
+    if (!req) {
+        res.status(400).json({
+            ok: false,
+            message: 'Error en el request'
+        });
+        return
+    }
+    oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
+    async function comboCargo() {
+        let connection;
+        try {
+            connection = await oracledb.getConnection({
+                user: process.env.USER,
+                password: process.env.PASSWORD,
+                connectString: process.env.ORACLE_URI
+            });
+            const result = await connection.execute('SELECT ID_CARGO,NOMBRE_CARGO FROM CARGO ORDER BY ID_CARGO');
+            res.status(200).json({
+                message: result.resultSet,
+                Rows: result.rows
+            })
+
+        } catch (err) {
+            console.log(err)
+        } finally {
+            if (connection) {
+                try {
+                    await connection.close();
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        }
+    }
+
+    comboCargo();
+
+});
+
+router.get('/comboArea', (req, res) => {
+
+    if (!req) {
+        res.status(400).json({
+            ok: false,
+            message: 'Error en el request'
+        });
+        return
+    }
+    oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
+    async function comboArea() {
+        let connection;
+        try {
+            connection = await oracledb.getConnection({
+                user: process.env.USER,
+                password: process.env.PASSWORD,
+                connectString: process.env.ORACLE_URI
+            });
+            const result = await connection.execute('SELECT ID_AREA,NOMBRE_AREA FROM AREA ORDER BY ID_AREA');
+            res.status(200).json({
+                message: result.resultSet,
+                Rows: result.rows
+            })
+
+        } catch (err) {
+            console.log(err)
+        } finally {
+            if (connection) {
+                try {
+                    await connection.close();
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        }
+    }
+
+    comboArea();
+
+});
 module.exports = router
