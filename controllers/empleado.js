@@ -108,14 +108,14 @@ router.post('/empleadoCreate', (req, res) => {
 
 router.put('/empleadoUpdate', (req, res) => {
     //TODO Enviar id_usuario de la sesion iniciada 
-    if (!req.body.ID_USUARIO_LOGIN || !req.body.SNOMBRE_EMPLEADO || !req.body.PAPELLIDO_EMPLEADO || !req.body.SAPELLIDO_EMPLEADO || !req.body.EDAD_EMPLEADO || !req.body.RUN_EMPLEADO || !req.body.DV_EMPLEADO || !req.body.DIRECCION || !req.body.ID_COMUNA || !req.body.ID_AREA || !req.body.ID_CARGO) {
+    if (!req.body.ID_EMPLEADO || !req.body.SNOMBRE_EMPLEADO || !req.body.PAPELLIDO_EMPLEADO || !req.body.SAPELLIDO_EMPLEADO || !req.body.EDAD_EMPLEADO || !req.body.RUN_EMPLEADO || !req.body.DV_EMPLEADO || !req.body.DIRECCION || !req.body.ID_COMUNA || !req.body.ID_AREA || !req.body.ID_CARGO) {
         res.status(400).json({ ok: false, message: "Faltan campos" })
         return
     }
     oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 
 
-    let ID_USUARIO_LOGIN = req.body.ID_USUARIO_LOGIN; //validado
+    let ID_EMPLEADO_UPDATE = req.body.ID_EMPLEADO; //validado
     let SNOMBRE_EMPLEADO = req.body.SNOMBRE_EMPLEADO; //validado
     let PAPELLIDO_EMPLEADO = req.body.PAPELLIDO_EMPLEADO; //validado
     let SAPELLIDO_EMPLEADO = req.body.SAPELLIDO_EMPLEADO;
@@ -138,7 +138,7 @@ router.put('/empleadoUpdate', (req, res) => {
             });
 
             const result = await connection
-                .execute('UPDATE EMPLEADOS SET SNOMBRE_EMPLEADO =:SNOMBRE_EMPLEADONEW,PAPELLIDO_EMPLEADO =:PAPELLIDO_EMPLEADONEW,SAPELLIDO_EMPLEADO =:SAPELLIDO_EMPLEADONEW, EDAD_EMPLEADO =:EDAD_EMPLEADONEW,RUN_EMPLEADO =:RUN_EMPLEADONEW,DV_EMPLEADO =:DV_EMPLEADONEW,DIRECCION =:DIRECCIONNEW,ID_COMUNA =:ID_COMUNANEW,ID_AREA =:ID_AREANEW,ID_CARGO =:ID_CARGONEW WHERE ID_USUARIO in :ID_USUARIO_LOGIN ', {
+                .execute('UPDATE EMPLEADOS SET SNOMBRE_EMPLEADO =:SNOMBRE_EMPLEADONEW,PAPELLIDO_EMPLEADO =:PAPELLIDO_EMPLEADONEW,SAPELLIDO_EMPLEADO =:SAPELLIDO_EMPLEADONEW, EDAD_EMPLEADO =:EDAD_EMPLEADONEW,RUN_EMPLEADO =:RUN_EMPLEADONEW,DV_EMPLEADO =:DV_EMPLEADONEW,DIRECCION =:DIRECCIONNEW,ID_COMUNA =:ID_COMUNANEW,ID_AREA =:ID_AREANEW,ID_CARGO =:ID_CARGONEW WHERE ID_EMPLEADO in :ID_EMPLEADO_UPDATE ', {
                     SNOMBRE_EMPLEADONEW: SNOMBRE_EMPLEADO,
                     PAPELLIDO_EMPLEADONEW: PAPELLIDO_EMPLEADO,
                     SAPELLIDO_EMPLEADONEW: SAPELLIDO_EMPLEADO,
@@ -149,7 +149,7 @@ router.put('/empleadoUpdate', (req, res) => {
                     ID_COMUNANEW: ID_COMUNA,
                     ID_AREANEW: ID_AREA,
                     ID_CARGONEW: ID_CARGO,
-                    ID_USUARIO_LOGIN: ID_USUARIO_LOGIN,
+                    ID_EMPLEADO_UPDATE: ID_EMPLEADO_UPDATE,
                 });
 
             res.status(200).json({
@@ -223,14 +223,13 @@ router.get('/empleadoBuscar', (req, res) => {
 
 });
 
-
-router.delete('/empleadoDelete', (req, res) => {
+router.put('/empleadoDelete', (req, res) => {
 
     if (!req.body.id_empleado) {
         res.status(400).json({ status: false, message: 'Bad Request' })
         return
     }
-    async function usuarioDelete() {
+    async function empleadoDelete() {
         oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
         let id_empleado_IN = req.body.id_empleado;
         let connection;
@@ -241,18 +240,27 @@ router.delete('/empleadoDelete', (req, res) => {
                 password: process.env.PASSWORD,
                 connectString: process.env.ORACLE_URI
             });
+            let disableConstraint1 = await connection.execute('ALTER TABLE EMPLEADOS DISABLE CONSTRAINT EMPLEADOS_FK1').then(console.log('ok'));
+            /*let disableConstraint2 = await connection.execute('ALTER TABLE EMPLEADOS DISABLE CONSTRAINT EMPLEADOS_FK2').then(console.log('ok'));
+            let disableConstraint3 = await connection.execute('ALTER TABLE EMPLEADOS DISABLE CONSTRAINT EMPLEADOS_FK3').then(console.log('ok'));
+            let disableConstraint4 = await connection.execute('ALTER TABLE EMPLEADOS DISABLE CONSTRAINT EMPLEADOS_FK4').then(console.log('ok'));*/
+            let result1 = await connection.execute('DELETE FROM USUARIOS WHERE ID_USUARIO IN (SELECT ID_USUARIO FROM EMPLEADOS WHERE ID_EMPLEADO IN :1)', [id_empleado_IN]).then(console.log('ok'));;
 
-            let result = await connection.execute('DELETE FROM EMPLEADOS WHERE ID_EMPLEADO IN :1', [id_empleado_IN])
-            res.status(200).json({ ok: true, message: 'El empleado ' + id_empleado_IN + ' ha sido eliminado' })
+            res.status(200).json({ ok: true, message: 'El empleado ' + id_empleado_IN + ' ha sido eliminado' });
         } catch (error) {
             console.log(error)
         } finally {
-            const commit = await connection.execute('commit')
+            let result2 = await connection.execute('DELETE FROM EMPLEADOS WHERE ID_EMPLEADO IN :1', [id_empleado_IN]).then(console.log('ok'));
+            let enableConstraint1 = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK1;').then(console.log('ok'));
+            let enableConstraint2 = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK2;').then(console.log('ok'));
+            let enableConstraint3 = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK3;').then(console.log('ok'));
+            let enableConstraint4 = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK4;').then(console.log('ok'));
+            const commit = await connection.execute('commit').then(console.log('ok'));;
             connection.close()
         }
 
     }
-    usuarioDelete()
+    empleadoDelete()
 
 });
 //Métodos para cargar ComboBoxes en UI EMPLEADOS

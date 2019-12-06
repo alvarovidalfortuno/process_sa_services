@@ -83,6 +83,7 @@ router.post('/usuarioCreate', (req, res) => {
         } finally {
             if (connection) {
                 try {
+                    let commit = await connection.execute('commit')
                     await connection.close();
                 } catch (error) {
                     console.log(error);
