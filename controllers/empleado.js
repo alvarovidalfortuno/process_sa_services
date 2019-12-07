@@ -27,21 +27,21 @@ router.get('/EmpleadoList', (req, res) => {
                 password: process.env.PASSWORD,
                 connectString: process.env.ORACLE_URI
             });
-            const result = await connection.execute('SELECT * FROM EMPLEADOS ORDER BY ID_EMPLEADO');
+            const result = await connection
+                .execute('SELECT E.ID_EMPLEADO, E.SNOMBRE_EMPLEADO, E.PAPELLIDO_EMPLEADO, E.SAPELLIDO_EMPLEADO, E.EDAD_EMPLEADO, E.RUN_EMPLEADO, E.DV_EMPLEADO, E.DIRECCION, C.NOMBRE_COMUNA, U.CORREO_USUARIO, A.NOMBRE_AREA, CA.NOMBRE_CARGO FROM EMPLEADOS E INNER JOIN COMUNA C ON E.ID_COMUNA = C.ID_COMUNA INNER JOIN USUARIOS U ON E.ID_USUARIO = U.ID_USUARIO INNER JOIN AREA A ON E.ID_AREA = A.ID_AREA INNER JOIN CARGO CA ON E.ID_CARGO = CA.ID_CARGO WHERE ROWNUM <=20 ORDER BY E.ID_EMPLEADO DESC');
+
             res.status(200).json({
                 message: result.resultSet,
                 Rows: result.rows
             })
 
         } catch (err) {
-            console.log(err)
+
         } finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {
-                    console.log(error);
-                }
+                } catch (error) {}
             }
         }
     }
@@ -80,26 +80,36 @@ router.post('/empleadoCreate', (req, res) => {
                 password: process.env.PASSWORD,
                 connectString: process.env.ORACLE_URI
             });
+            const buscarUsuario = await connection.execute('SELECT * FROM EMPLEADOS WHERE ID_USUARIO = :1', [ID_USUARIO]);
+            if (buscarUsuario.rows.length > 0) {
+                res.status(200).json({
+                    ok: false,
+                    message: 'Usuario ya existe!'
+                });
+                return buscarUsuario;
 
-            const result = await connection
-                .execute('INSERT INTO EMPLEADOS VALUES((SELECT MAX(ID_EMPLEADO)+1 FROM EMPLEADOS),:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11)', [SNOMBRE_EMPLEADO, PAPELLIDO_EMPLEADO, SAPELLIDO_EMPLEADO, EDAD_EMPLEADO, RUN_EMPLEADO, DV_EMPLEADO, DIRECCION, ID_COMUNA, ID_USUARIO, ID_AREA, ID_CARGO]);
-
-
-            res.status(200).json({
-                ok: true,
-                message: 'Empleado creado exitosamente!'
-            });
-            console.log('result: ', result)
-            return result
-        } catch (error) {
-            console.log(error);
-        } finally {
+            } else {
+                const result = await connection
+                    .execute('INSERT INTO EMPLEADOS VALUES((SELECT MAX(ID_EMPLEADO)+1 FROM EMPLEADOS),:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11)', [SNOMBRE_EMPLEADO, PAPELLIDO_EMPLEADO, SAPELLIDO_EMPLEADO, EDAD_EMPLEADO, RUN_EMPLEADO, DV_EMPLEADO, DIRECCION, ID_COMUNA, ID_USUARIO, ID_AREA, ID_CARGO]);
+                if (result.rowsAffected > 0) {
+                    res.status(200).json({
+                        ok: true,
+                        message: 'Empleado creado exitosamente!'
+                    });
+                    return result;
+                } else {
+                    res.status(200).json({
+                        ok: false,
+                        message: 'Empleado no fue creado!'
+                    });
+                    return result;
+                }
+            }
+        } catch (error) {} finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {
-                    console.log(error);
-                }
+                } catch (error) {}
             }
         }
     }
@@ -152,20 +162,25 @@ router.put('/empleadoUpdate', (req, res) => {
                     ID_EMPLEADO_UPDATE: ID_EMPLEADO_UPDATE,
                 });
 
-            res.status(200).json({
-                ok: true,
-                message: 'Usuario actualizado exitosamente!'
-            });
-            return result.rows
-        } catch (error) {
-            console.log(error);
-        } finally {
+            if (result.rowsAffected > 0) {
+                res.status(200).json({
+                    ok: true,
+                    message: 'Usuario actualizado exitosamente!'
+                });
+            } else {
+                res.status(200).json({
+                    ok: true,
+                    message: 'Usuarios no pudo ser actualizado, revise la información utilizada'
+                });
+                return result.rows
+            }
+
+
+        } catch (error) {} finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {
-                    console.log(error);
-                }
+                } catch (error) {}
             }
         }
     }
@@ -204,15 +219,11 @@ router.get('/empleadoBuscar', (req, res) => {
 
             });
             return result.rows
-        } catch (error) {
-            console.log(error);
-        } finally {
+        } catch (error) {} finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {
-                    console.log(error);
-                }
+                } catch (error) {}
             }
         }
     }
@@ -223,6 +234,50 @@ router.get('/empleadoBuscar', (req, res) => {
 
 });
 
+router.get('/empleadoBuscarIdUsuario', (req, res) => {
+
+    if (!req.query.id_usuario) {
+        res.status(400).json({
+            ok: false,
+            message: 'No se envió una id de empleado'
+
+
+        });
+    }
+    async function empleadoBuscarIdUsuario() {
+        let connection;
+        let id = req.query.id_usuario;
+
+        try {
+            connection = await oracledb.getConnection({
+                user: process.env.USER,
+                password: process.env.PASSWORD,
+                connectString: process.env.ORACLE_URI
+            });
+
+            const result = await connection
+                .execute('SELECT * FROM EMPLEADOS WHERE ID_USUARIO = :1', [id]);
+            var response = result.rows;
+            res.status(200).json({
+                response
+
+
+            });
+            return result.rows
+        } catch (error) {} finally {
+            if (connection) {
+                try {
+                    await connection.close();
+                } catch (error) {}
+            }
+        }
+    }
+
+
+    empleadoBuscarIdUsuario();
+
+
+});
 router.put('/empleadoDelete', (req, res) => {
 
     if (!req.body.id_empleado) {
@@ -240,22 +295,26 @@ router.put('/empleadoDelete', (req, res) => {
                 password: process.env.PASSWORD,
                 connectString: process.env.ORACLE_URI
             });
-            let disableConstraint1 = await connection.execute('ALTER TABLE EMPLEADOS DISABLE CONSTRAINT EMPLEADOS_FK1').then(console.log('ok'));
-            /*let disableConstraint2 = await connection.execute('ALTER TABLE EMPLEADOS DISABLE CONSTRAINT EMPLEADOS_FK2').then(console.log('ok'));
-            let disableConstraint3 = await connection.execute('ALTER TABLE EMPLEADOS DISABLE CONSTRAINT EMPLEADOS_FK3').then(console.log('ok'));
-            let disableConstraint4 = await connection.execute('ALTER TABLE EMPLEADOS DISABLE CONSTRAINT EMPLEADOS_FK4').then(console.log('ok'));*/
-            let result1 = await connection.execute('DELETE FROM USUARIOS WHERE ID_USUARIO IN (SELECT ID_USUARIO FROM EMPLEADOS WHERE ID_EMPLEADO IN :1)', [id_empleado_IN]).then(console.log('ok'));;
+            let disableConstraint1 = await connection.execute('ALTER TABLE EMPLEADOS DISABLE CONSTRAINT EMPLEADOS_FK1')
+                /*let disableConstraint2 = await connection.execute('ALTER TABLE EMPLEADOS DISABLE CONSTRAINT EMPLEADOS_FK2')
+                let disableConstraint3 = await connection.execute('ALTER TABLE EMPLEADOS DISABLE CONSTRAINT EMPLEADOS_FK3')
+                let disableConstraint4 = await connection.execute('ALTER TABLE EMPLEADOS DISABLE CONSTRAINT EMPLEADOS_FK4')*/
+            let result1 = await connection.execute('DELETE FROM USUARIOS WHERE ID_USUARIO IN (SELECT ID_USUARIO FROM EMPLEADOS WHERE ID_EMPLEADO IN :1)', [id_empleado_IN])
+            if (result1.rowsAffected == 0) {
+                res.status(200).json({
+                    Message: "El Empleado " + id_empleado_IN + " no existe"
+                });
+            } else {
+                res.status(200).json({ ok: true, message: 'El empleado ' + id_empleado_IN + ' ha sido eliminado' });
+            }
 
-            res.status(200).json({ ok: true, message: 'El empleado ' + id_empleado_IN + ' ha sido eliminado' });
-        } catch (error) {
-            console.log(error)
-        } finally {
-            let result2 = await connection.execute('DELETE FROM EMPLEADOS WHERE ID_EMPLEADO IN :1', [id_empleado_IN]).then(console.log('ok'));
-            let enableConstraint1 = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK1;').then(console.log('ok'));
-            let enableConstraint2 = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK2;').then(console.log('ok'));
-            let enableConstraint3 = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK3;').then(console.log('ok'));
-            let enableConstraint4 = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK4;').then(console.log('ok'));
-            const commit = await connection.execute('commit').then(console.log('ok'));;
+        } catch (error) {} finally {
+            let result2 = await connection.execute('DELETE FROM EMPLEADOS WHERE ID_EMPLEADO IN :1', [id_empleado_IN])
+            let enableConstraint1 = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK1;')
+            let enableConstraint2 = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK2;')
+            let enableConstraint3 = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK3;')
+            let enableConstraint4 = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK4;')
+            const commit = await connection.execute('commit')
             connection.close()
         }
 
@@ -288,15 +347,11 @@ router.get('/comboComuna', (req, res) => {
                 Rows: result.rows
             })
 
-        } catch (err) {
-            console.log(err)
-        } finally {
+        } catch (err) {} finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {
-                    console.log(error);
-                }
+                } catch (error) {}
             }
         }
     }
@@ -329,15 +384,11 @@ router.get('/comboUsuario', (req, res) => {
                 Rows: result.rows
             })
 
-        } catch (err) {
-            console.log(err)
-        } finally {
+        } catch (err) {} finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {
-                    console.log(error);
-                }
+                } catch (error) {}
             }
         }
     }
@@ -345,7 +396,42 @@ router.get('/comboUsuario', (req, res) => {
     comboUsuario();
 
 });
+router.get('/comboUsuarioActualizar', (req, res) => {
 
+    if (!req) {
+        res.status(400).json({
+            ok: false,
+            message: 'Error en el request'
+        });
+        return
+    }
+    oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
+    async function comboUsuarioActualizar() {
+        let connection;
+        try {
+            connection = await oracledb.getConnection({
+                user: process.env.USER,
+                password: process.env.PASSWORD,
+                connectString: process.env.ORACLE_URI
+            });
+            const result = await connection.execute('SELECT ID_USUARIO, CORREO_USUARIO FROM USUARIOS'); //WHERE ID_USUARIO IN (SELECT MAX(ID_USUARIO) FROM USUARIOS)
+            res.status(200).json({
+                message: result.resultSet,
+                Rows: result.rows
+            })
+
+        } catch (err) {} finally {
+            if (connection) {
+                try {
+                    await connection.close();
+                } catch (error) {}
+            }
+        }
+    }
+
+    comboUsuarioActualizar();
+
+});
 router.get('/comboCargo', (req, res) => {
 
     if (!req) {
@@ -370,15 +456,11 @@ router.get('/comboCargo', (req, res) => {
                 Rows: result.rows
             })
 
-        } catch (err) {
-            console.log(err)
-        } finally {
+        } catch (err) {} finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {
-                    console.log(error);
-                }
+                } catch (error) {}
             }
         }
     }
@@ -411,15 +493,11 @@ router.get('/comboArea', (req, res) => {
                 Rows: result.rows
             })
 
-        } catch (err) {
-            console.log(err)
-        } finally {
+        } catch (err) {} finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {
-                    console.log(error);
-                }
+                } catch (error) {}
             }
         }
     }

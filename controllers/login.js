@@ -28,22 +28,17 @@ router.post('/login', (req, res) => {
             });
 
             const result = await connection.execute('SELECT CONTRASE�A_USUARIO FROM USUARIOS WHERE CORREO_USUARIO = :1', [usuariosIN]);
-            //console.log(result.rows);
             let user_password_in = Object.values(result.rows)
             let json = JSON.stringify(user_password_in)
             res.status(200).json({
                 json
             });
             //return result.rows
-        } catch (error) {
-            console.log(error);
-        } finally {
+        } catch (error) {} finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {
-                    console.log(error);
-                }
+                } catch (error) {}
             }
         }
     }
