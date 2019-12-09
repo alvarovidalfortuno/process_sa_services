@@ -36,12 +36,14 @@ router.get('/EmpleadoList', (req, res) => {
             })
 
         } catch (err) {
-
+            console.log(err);
         } finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {}
+                } catch (error) {
+                    console.log(error);
+                }
             }
         }
     }
@@ -105,11 +107,15 @@ router.post('/empleadoCreate', (req, res) => {
                     return result;
                 }
             }
-        } catch (error) {} finally {
+        } catch (error) {
+            console.log(error);
+        } finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {}
+                } catch (error) {
+                    console.log(error);
+                }
             }
         }
     }
@@ -176,11 +182,11 @@ router.put('/empleadoUpdate', (req, res) => {
             }
 
 
-        } catch (error) {} finally {
+        } catch (error) { console.log(error); } finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {}
+                } catch (error) { console.log(error); }
             }
         }
     }
@@ -219,11 +225,11 @@ router.get('/empleadoBuscar', (req, res) => {
 
             });
             return result.rows
-        } catch (error) {} finally {
+        } catch (error) { console.log(error); } finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {}
+                } catch (error) { console.log(error); }
             }
         }
     }
@@ -264,11 +270,11 @@ router.get('/empleadoBuscarIdUsuario', (req, res) => {
 
             });
             return result.rows
-        } catch (error) {} finally {
+        } catch (error) { console.log(error); } finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {}
+                } catch (error) { console.log(error); }
             }
         }
     }
@@ -308,14 +314,19 @@ router.put('/empleadoDelete', (req, res) => {
                 res.status(200).json({ ok: true, message: 'El empleado ' + id_empleado_IN + ' ha sido eliminado' });
             }
 
-        } catch (error) {} finally {
-            let result2 = await connection.execute('DELETE FROM EMPLEADOS WHERE ID_EMPLEADO IN :1', [id_empleado_IN])
-            let enableConstraint1 = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK1;')
-            let enableConstraint2 = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK2;')
-            let enableConstraint3 = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK3;')
-            let enableConstraint4 = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK4;')
-            const commit = await connection.execute('commit')
-            connection.close()
+        } catch (error) { console.log(error); } finally {
+            if (connection) {
+                try {
+                    let result2 = await connection.execute('DELETE FROM EMPLEADOS WHERE ID_EMPLEADO IN :1', [id_empleado_IN])
+                    let enableConstraint1 = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK1;')
+                    let enableConstraint2 = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK2;')
+                    let enableConstraint3 = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK3;')
+                    let enableConstraint4 = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK4;')
+                    const commit = await connection.execute('commit')
+                    connection.close()
+                } catch (error) { console.log(error); }
+            }
+
         }
 
     }
@@ -347,11 +358,11 @@ router.get('/comboComuna', (req, res) => {
                 Rows: result.rows
             })
 
-        } catch (err) {} finally {
+        } catch (err) { console.log(err); } finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {}
+                } catch (error) { console.log(error); }
             }
         }
     }
@@ -384,11 +395,11 @@ router.get('/comboUsuario', (req, res) => {
                 Rows: result.rows
             })
 
-        } catch (err) {} finally {
+        } catch (err) { console.log(err); } finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {}
+                } catch (error) { console.log(error); }
             }
         }
     }
@@ -420,11 +431,11 @@ router.get('/comboUsuarioActualizar', (req, res) => {
                 Rows: result.rows
             })
 
-        } catch (err) {} finally {
+        } catch (err) { console.log(err); } finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {}
+                } catch (error) { console.log(error); }
             }
         }
     }
@@ -456,11 +467,11 @@ router.get('/comboCargo', (req, res) => {
                 Rows: result.rows
             })
 
-        } catch (err) {} finally {
+        } catch (err) { console.log(err); } finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {}
+                } catch (error) { console.log(error); }
             }
         }
     }
@@ -493,11 +504,11 @@ router.get('/comboArea', (req, res) => {
                 Rows: result.rows
             })
 
-        } catch (err) {} finally {
+        } catch (err) { console.log(err); } finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {}
+                } catch (error) { console.log(error); }
             }
         }
     }

@@ -33,11 +33,11 @@ router.get('/usuarioList', (req, res) => {
                 Rows: result.rows
             })
 
-        } catch (err) {} finally {
+        } catch (err) { console.log(err); } finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {}
+                } catch (error) { console.log(error); }
             }
         }
     }
@@ -70,11 +70,11 @@ router.get('/buscarUsuario', (req, res) => {
                 Rows: result.rows
             })
 
-        } catch (err) {} finally {
+        } catch (err) { console.log(err); } finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {}
+                } catch (error) { console.log(error); }
             }
         }
     }
@@ -122,12 +122,12 @@ router.post('/usuarioCreate', (req, res) => {
                 return result
             }
 
-        } catch (error) {} finally {
+        } catch (error) { console.log(error); } finally {
             if (connection) {
                 try {
                     let commit = await connection.execute('commit')
                     await connection.close();
-                } catch (error) {}
+                } catch (error) { console.log(error); }
             }
         }
     }
@@ -163,11 +163,11 @@ router.put('/usuarioUpdate', (req, res) => {
                 message: 'Usuario actualizado exitosamente!'
             });
             return result.rows
-        } catch (error) {} finally {
+        } catch (error) { console.log(error); } finally {
             if (connection) {
                 try {
                     await connection.close();
-                } catch (error) {}
+                } catch (error) { console.log(error); }
             }
         }
     }
@@ -197,7 +197,7 @@ router.delete('/usuarioDelete', (req, res) => {
             let deletingUser = await connection.execute('BEGIN BORRAR_USUARIO(:1); END;', [id_usuario_IN]);
 
             res.status(200).json({ ok: true, message: 'El Usuario ' + id_usuario_IN + ' ha sido eliminado' })
-        } catch (error) {} finally {
+        } catch (error) { console.log(error); } finally {
             let enableConstraint = await connection.execute('ALTER TABLE EMPLEADOS ENABLE NOVALIDATE CONSTRAINT EMPLEADOS_FK1');
             let commit = await connection.execute('commit')
             connection.close()
